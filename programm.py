@@ -64,8 +64,8 @@ def add(tags,full_tags):
 
 
 if __name__ == '__main__':
-    directory = "../../../cute/"
-    source = "../../../filter/"
+    directory = "cute/"
+    source = "filter/"
     obj = []
     with open('file_name.txt','r') as file:
         for line in file:
