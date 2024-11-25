@@ -119,9 +119,12 @@ if __name__ == '__main__':
 
             with open('file_name.txt','a') as writer:
                 for i in to_add:
+                    obj.append((i,full_tags))
                     wr = i+ ' ' + tags_ + '\n'
                     writer.write(wr)
                 writer.close()
+
+            print(obj)
 
 
             for i in to_remove:
