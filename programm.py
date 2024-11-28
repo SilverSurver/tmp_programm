@@ -40,14 +40,14 @@ def handle_put(dest_bwz_source,tx):
             process.wait()
 
             subprocess.run("pkill xviewer", shell=True, check=True)
+
+            shutil.move(full_path,dest_bwz_source)
         file.close()
 
         if len(to_delte) > 0:
             for image in to_delte:
                 subprocess.run(f'rm {os.path.join(source,image)}', shell=True, check=True)
 
-        if move_counter > 0:
-            subprocess.run(f'mv {source}* {dest_bwz_source}',shell=True,check=True)
 
 
 def filter_fits(filter_arr, tag_arr):
