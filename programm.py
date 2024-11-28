@@ -22,7 +22,7 @@ def handle_put(dest_bwz_source,tx):
 
     with open(tx,'a') as file:
         for filename in os.listdir(source):
-            if images.__contains__(filename):
+            if images.__contains__(filename) or filename[-6] == ')':
                 to_delte.append(filename)
                 continue
 
@@ -46,7 +46,7 @@ def handle_put(dest_bwz_source,tx):
 
         if len(to_delte) > 0:
             for image in to_delte:
-                subprocess.run(f'rm {os.path.join(source,image)}', shell=True, check=True)
+                subprocess.run(f'rm "{os.path.join(source,image)}"', shell=True, check=True)
 
 
 
