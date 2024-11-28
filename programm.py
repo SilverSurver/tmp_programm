@@ -12,9 +12,20 @@ def tag_arr_to_str(tags):
 def handle_put(dest_bwz_source,tx):
     move_counter = 0
     source = 'download_folder/'
-    with open(tx,'a') as file:
+    images = []
+    to_delte = []
+    with open(tx,'r') as file:
+        for line in file:
+            image,_ = str_to_tag_arr(line)
+            images.append(image.strip())
+        file.close()
 
+    with open(tx,'a') as file:
         for filename in os.listdir(source):
+            if images.__contains__(filename):
+                to_delte.append(filename)
+                continue
+
             move_counter+=1
             full_path = os.path.join(source, filename)
             process = subprocess.Popen(f'gio open {full_path}', shell=True)
@@ -30,6 +41,10 @@ def handle_put(dest_bwz_source,tx):
 
             subprocess.run("pkill xviewer", shell=True, check=True)
         file.close()
+
+        if len(to_delte) > 0:
+            for image in to_delte:
+                subprocess.run(f'rm {os.path.join(source,image)}', shell=True, check=True)
 
         if move_counter > 0:
             subprocess.run(f'mv {source}* {dest_bwz_source}',shell=True,check=True)
