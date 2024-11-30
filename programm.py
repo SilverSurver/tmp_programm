@@ -143,6 +143,17 @@ def handle_update(tx,tmp):
         writing.close()
 
 
+def handle_clear(dest):
+    source = 'download_folder/'
+
+    down_dir = os.listdir(source)
+    dest_dir = os.listdir(dest)
+
+    for file in down_dir:
+        if file[-6] == ')' or dest_dir.__contains__(file):
+            os.remove(os.path.join(source,file))
+
+
 
 if __name__ == '__main__':
     source = 'cute/'
@@ -160,5 +171,7 @@ if __name__ == '__main__':
                 continue
         elif cmd == 'u':
             handle_update(tx,tmp_file)
+        elif cmd == 'c':
+            handle_clear(source)
 
         cmd = input('cmd: ')
