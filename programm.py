@@ -1,7 +1,10 @@
 import os
+import readline
 import shutil
-import signal
 import subprocess
+
+from pwnlib.term.readline import history
+
 
 def tag_arr_to_str(tags):
     ret = ''
@@ -9,7 +12,7 @@ def tag_arr_to_str(tags):
         ret+=(str(tag)+' ')
     return ret.strip()
 
-def handle_put(dest_bwz_source,tx):
+def handle_put(dest_bwz_source,tx,dict_or,dict_and):
     move_counter = 0
     source = 'download_folder/'
     images = []
@@ -30,8 +33,17 @@ def handle_put(dest_bwz_source,tx):
             full_path = os.path.join(source, filename)
             process = subprocess.Popen(f'gio open {full_path}', shell=True)
             tags = input("tags : ")
+            readline.write_history_file(".HISTORY")
+            history.append(tags)
+            if tags == 'show':
+                for k in dict_or.keys():
+                    print(str(k) + " ", end='')
+                print()
+                tags = input("tags: ")
+                readline.write_history_file(".HISTORY")
+                history.append(tags)
             tag_arr = tags.split(' ')
-            wr = tag_arr_to_str(fill_tags(tag_arr))
+            wr = tag_arr_to_str(fill_tags(tag_arr,dict_or,dict_and))
 
 
             file.write(f"{filename} {wr}\n")
@@ -111,12 +123,12 @@ def add_and(one,two,tags):
                 tags.append(tag)
     return tags
 
-def fill_tags(tags):
-    tags = add_or(['hund'], ['doggo'], tags)
-    tags = add_or(['doggo','kitty'],['cute','sues'],tags)
-    tags = add_and(['doggo','cute'],['super'],tags)
-    tags = add_and(['kitty', 'cute'], ['super'], tags)
-    tags = add_and(['k', 'j',], ['noice'], tags)
+def fill_tags(tags,dict_or, dict_and):
+    for key, value in dict_or.items():
+        tags = add_or(key.strip().split('-'),value,tags)
+
+    for key, value in dict_and.items():
+        tags = add_or(key.strip().split('-'),value,tags)
 
     return tags
 
@@ -126,11 +138,11 @@ def str_to_tag_arr(im_ta_str):
     temp = tmp[1:]
     return im.strip() ,[i.strip() for i in temp]
 
-def handle_update(tx,tmp):
+def handle_update(tx,tmp,dict_or,dict_and):
     with open(tx,'r') as reading , open(tmp,'w') as writing:
         for line in reading:
             im,tags = str_to_tag_arr(line)
-            tags = fill_tags(tags)
+            tags = fill_tags(tags,dict_or,dict_and)
             writing.write(f"{im} {tag_arr_to_str(tags)}\n")
         reading.close()
         writing.close()
@@ -154,23 +166,58 @@ def handle_clear(dest):
             os.remove(os.path.join(source,file))
 
 
+def read_in_dict(rules_or, rules_and, dict_or, dict_and):
+    with open(rules_or,'r') as file:
+        for line in file:
+            if line.strip() == '':
+                continue
+
+            tmp = line.strip().split(' ')
+            key = tmp[0]
+            value = tmp[1:]
+            dict_or[key] = value
+        file.close()
+
+    with open(rules_and, 'r') as file:
+        for line in file:
+            if line.strip() == '':
+                continue
+
+            tmp = line.strip().split(' ')
+            key = tmp[0]
+            value = tmp[1:]
+            dict_and[key] = value
+        file.close()
+
+
 
 if __name__ == '__main__':
+    readline.read_history_file(".HISTORY")
     source = 'cute/'
     dest = 'filter/'
     tx = 'file_name.txt'
     tmp_file = 'temp.txt'
+    rules_or = "rules_or.txt"
+    rules_and = "rules_and.txt"
+
+    dict_or = {}
+    dict_and = {}
+    read_in_dict(rules_or,rules_and,dict_or, dict_and)
+    print(dict_or)
+    print(dict_and)
+
     cmd = input('cmd: ')
+
     while(cmd != 'q'):
         if cmd == 'p':
-            handle_put(source,tx)
+            handle_put(source,tx,dict_or,dict_and)
         elif cmd == 'f':
             if handle_filter(source,dest,tx):
                 cmd = input('cmd: ')
                 subprocess.run(f'mv {dest}* {source}',shell=True, check=True)
                 continue
         elif cmd == 'u':
-            handle_update(tx,tmp_file)
+            handle_update(tx,tmp_file,dict_or,dict_and)
         elif cmd == 'c':
             handle_clear(source)
 
